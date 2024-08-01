@@ -170,6 +170,47 @@ def search_notes(ctx, **kwargs):
     for note in keep.find(**query_params(keep, **kwargs)):
         print_note(note)
 
+@notes.command('searchdelete', options_metavar='[options]')
+@click.option('--color', default='', callback=get_click_color, metavar='<color>',
+              help='Filter by note color. Choices: {}'.format(', '.join(COLOR_NAMES)))
+@click.option('--labels', default='', callback=comma_separated, metavar='<labels>',
+              help='Filter by label notes. Filter by multiple labels separated by commas.')
+@click.option('--deleted/--not-deleted', default=None,
+              help='Filter by deleted notes or not')
+@click.option('--trashed/--not-trashed', default=None,
+              help='Filter by deleted notes or not')
+@click.option('--pinned/--not-pinned', default=None,
+              help='Filter by pinned notes or not')
+@click.option('--archived/--not-archived', default=None,
+              help='Filter by archived notes or not')
+@click.option('--title', default=None, metavar='<title>',
+              help='Filter by title note')
+@click.option('--text', default=None, metavar='<note_content>',
+              help='Search in note content')
+@click.argument('query', default='', metavar='[query]')
+@click.pass_context
+def search_notes_delete(ctx, **kwargs):
+    """Search for notes using filters or/and use query text. For example:
+
+    .. code-block:: shell
+
+        gkeep notes search --not-deleted "GKeep installed"
+
+    The syntax is:
+    """
+    keep = ctx.obj['keep']
+    for note in keep.find(**query_params(keep, **kwargs)):
+        print_note(note)
+        if note and (note.deleted or note.trashed):
+            click.echo('The note "{}" had already been deleted.'.format(note.title))
+        elif note:
+            note.delete()
+            keep.sync()
+            click.echo('Note with title "{}" deleted.'.format(note.title))
+        else:
+            click.echo('The note was not found', err=True)
+            sys.exit(2)
+
 
 @notes.command('get', options_metavar='[options]')
 @click.argument('id', default=None, required=False, metavar='[id]')
