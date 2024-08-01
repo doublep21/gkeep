@@ -205,12 +205,12 @@ def search_notes_delete(ctx, **kwargs):
             click.echo('The note "{}" had already been deleted.'.format(note.title))
         elif note:
             note.delete()
-            keep.sync()
+            
             click.echo('Note with title "{}" deleted.'.format(note.title))
         else:
             click.echo('The note was not found', err=True)
             sys.exit(2)
-
+    keep.sync()
 
 @notes.command('get', options_metavar='[options]')
 @click.argument('id', default=None, required=False, metavar='[id]')
